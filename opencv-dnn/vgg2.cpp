@@ -84,9 +84,9 @@ void read_files()
 
 int main(int argc, char **argv)
 {
-        string modelTxt = "/home/yjwudi/qt_cvdnn_face/model/VGG_FACE_deploy.prototxt";//prototxt
-        string modelBin = "/home/yjwudi/qt_cvdnn_face/model/VGG_FACE.caffemodel";//model
-        
+        string modelTxt = "/home/yjwudi/qt_cvdnn_face/model/LightenedCNN_A_deploy.prototxt";//prototxt
+        string modelBin = "/home/yjwudi/qt_cvdnn_face/model/LightenedCNN_A.caffemodel";//model
+
         Net net = dnn::readNetFromCaffe(modelTxt, modelBin);
         if (net.empty())
         {
@@ -108,21 +108,21 @@ int main(int argc, char **argv)
         for(i = 0; i < train_vec.size(); i++)
         {
             Debug(i);
-            Mat img = imread(train_vec[i]);
+            Mat img = imread(train_vec[i], 0);
             if (img.empty())
             {
                 std::cerr << "Can't read image from the file: " << train_vec[i] << std::endl;
                 exit(-1);
             }
-            resize(img, img, Size(224, 224));
-            cv::cvtColor(img, img, cv::COLOR_BGR2RGB);//need more process
+            resize(img, img, Size(128, 128));
+           // cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);//need more process
             dnn::Blob inputBlob = dnn::Blob::fromImages(img);
             net.setBlob(".data", inputBlob);
             net.forward();
-            dnn::Blob prob = net.getBlob("fc8");
+            dnn::Blob prob = net.getBlob("fc2");
             vector<float> feature_one;
             int channel = 0;
-            while (channel < 2622)//看网络相应层的output
+            while (channel < 10575)//看网络相应层的output
             {
                 feature_one.push_back(*prob.ptrf(0, channel, 1, 1));
                 channel++;
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
             feature_vector.push_back(feature_one);
         }
         cout << "Successful extract: " << feature_vector.size() << endl;
-        
+
         int sum = 0;
         for(i = 0; i < test_vec.size(); i++)
         {
@@ -140,15 +140,15 @@ int main(int argc, char **argv)
                 std::cerr << "Can't read image from the file: " << test_vec[i] << std::endl;
                 exit(-1);
             }
-            resize(img, img, Size(224, 224));
-            cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+            resize(img, img, Size(128, 128));
+            cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
             dnn::Blob inputBlob = dnn::Blob::fromImages(img);
             net.setBlob(".data", inputBlob);
             net.forward();
-            dnn::Blob prob = net.getBlob("fc8");
+            dnn::Blob prob = net.getBlob("fc2");
             vector<float> feature_one;
             int channel = 0;
-            while (channel < 2622)//看网络相应层的output
+            while (channel < 10575)//看网络相应层的output
             {
                 feature_one.push_back(*prob.ptrf(0, channel, 1, 1));
                 channel++;
